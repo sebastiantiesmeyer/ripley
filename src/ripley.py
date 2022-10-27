@@ -64,6 +64,49 @@ def _get_kernels(max_radius,linear_steps):
 
     return (kernels)
 
+def _get_kernels(max_radius,linear_steps):
+
+    if linear_steps>max_radius: linear_steps=max_radius
+
+    vals = np.exp2(np.arange(1,np.ceil(np.log2(max_radius))))
+    max_radius = int(vals[-1])
+    # print(vals)
+    # vals = np.ones((max_radius)+1)
+    # vals[0]=0
+    # vals[linear_steps+1:]+=np.arange(max_radius-linear_steps)
+    # vals = np.cumsum(vals)
+    # vals = vals[:(vals<max_radius).sum()+1]
+    # vals[-1]=max_radius
+
+    span = np.arange(-max_radius , max_radius +1)
+    X,Y = np.meshgrid(span,span)
+    dists = (X**2+Y**2)**0.5
+
+    kernel_1 = np.zeros_like(X)
+    kernel_1[max_radius,max_radius]=1
+    kernels = [kernel_1]
+
+    for i in range(len(vals)-1):
+
+        r1 = vals[i]
+        r2 = vals[i]+1
+        
+        kernel_1 = (dists-r1)
+        kernel_1 = -(kernel_1-1)*(kernel_1<1)
+        kernel_1[kernel_1>1] = 1
+        kernel_1 = 1-kernel_1 
+
+        kernel_2 = (dists-r2)
+        kernel_2 = -(kernel_2-1)*(kernel_2<1)
+        kernel_2[kernel_2>1] = 1
+        kernel_2[kernel_2==1] = kernel_1[kernel_2==1]
+        
+        kernels.append(kernel_2)
+        
+    kernels = np.array(kernels)
+
+    return (kernels)
+
     
 class Ripley():
     """Ripley class 
